@@ -1,0 +1,27 @@
+---
+- name: Create snapshot of VMs
+  hosts: localhost
+  gather_facts: false
+  vars:
+    proxmox_hostname: "172.25.100.122:8006"
+    proxmox_node: "moduleb"
+    proxmox_user: "root@pam"
+    proxmox_password: "M4ster!"
+    vm_storage: "local-lvm"
+
+  tasks:
+    - name: Initial snapshot
+      community.general.proxmox_snap:
+        api_host: "{{ proxmox_hostname }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        vmid: "{{ item }}"
+        snapname: "ALGUS"
+        state: present
+      loop:
+        - 100
+        - 200
+        - 300
+        - 400
+        - 500
+        - 600

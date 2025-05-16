@@ -1,0 +1,21 @@
+shares:
+  - name: Avalik_Ansible
+    path: N:\Avalik_Ansible
+    full_access: 
+      - "Everyone"
+    read_access: []
+    description: "Ansible jagatud Avalik kaust"
+
+  - name: Adminnid
+    path: N:\Adminnid
+    full_access: 
+      - "Domain Admins"
+    description: "Ainult adminnidele"
+
+  - name: Vaatlemiseks
+    path: N:\Vaatlemiseks
+    full_access: 
+      - "Domain Admins"
+    read_access:
+      - "Domain Users"
+    description: "Kasutajatele vaatlemiseks"

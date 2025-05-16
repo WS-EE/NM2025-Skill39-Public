@@ -1,0 +1,32 @@
+all:
+  children:
+    pve:
+      hosts:
+        moduleb-tpt:
+          ansible_host: "172.25.100.151"
+          meister_password: "caddie-rinsing-footage"
+        moduleb-vikk:
+          ansible_host: "172.25.100.152"
+          meister_password: "nuclei-smartly-coyness"
+        moduleb-kkhk:
+          ansible_host: "172.25.100.153"
+          meister_password: "synopsis-only-pastime"
+        moduleb-pkhk:
+          ansible_host: "172.25.100.155"
+          meister_password: "panic-versus-failing"
+        moduleb-voco:
+          ansible_host: "172.25.100.156"
+          meister_password: "smell-campfire-umpire"
+        moduleb-hkhk:
+          ansible_host: "172.25.100.157"
+          meister_password: "tusk-cost-propeller"
+        moduleb-tthk:
+          ansible_host: "172.25.3.102"
+          meister_password: "barley-sharper-remark"
+        moduleb-ewers:
+          ansible_host: "172.25.4.102"
+          meister_password: "shout-mounting-laxative"
+      vars:
+        ansible_user: "root"
+        ansible_connection: ssh
+        ansible_ssh_pass: "M4ster!"

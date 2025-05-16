@@ -1,0 +1,18 @@
+---
+- name: Proxmox users
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Ensure Proxmox user exists (create if missing)
+      ansible.builtin.shell: >
+        pveum user add meister@pve --password '{{ meister_password }}'
+      failed_when: false
+
+    - name: Always set password for meister@pve
+      ansible.builtin.shell: >
+        pveum passwd meister@pve --password '{{ meister_password }}'
+
+    - name: Assign PVEVMAdmin role to meister@pve
+      ansible.builtin.shell: >
+        pveum aclmod /vms --user meister@pve --role PVEVMAdmin

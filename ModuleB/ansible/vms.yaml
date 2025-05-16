@@ -1,0 +1,171 @@
+---
+- name: Clone VMs from Packer templates
+  hosts: localhost
+  gather_facts: false
+  vars:
+    proxmox_hostname: "172.25.1.102:8006"
+    proxmox_node: "moduleb"
+    proxmox_user: "root@pam"
+    proxmox_password: "M4ster!"
+    proxmox_api_token_id: "root@pam!packer"
+    proxmox_api_token_key: "c715ba25-2cdb-42f1-9183-1c919fcf3cc4"
+    vm_storage: "local-lvm"
+
+  tasks:
+    # - name: Create RTR machine
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     name: "RTR"
+    #     clone: "template-gui"
+    #     newid: 100
+    #     memory: 4096
+    #     cores: 4
+    #     full: true
+    #     onboot: true
+    #     timeout: 240000
+    #     validate_certs: false
+
+    # - name: Create DC machine
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     name: "DC"
+    #     clone: "template-gui"
+    #     newid: 200
+    #     memory: 4096
+    #     cores: 4
+    #     net:
+    #       net0: "virtio,bridge=vmbr0,tag=100"
+    #     full: true
+    #     onboot: true
+    #     timeout: 240000
+    #     validate_certs: false
+
+    # - name: Create SRV machine
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     name: "SRV"
+    #     clone: "template-gui"
+    #     newid: 300
+    #     memory: 4096
+    #     cores: 4
+    #     full: true
+    #     onboot: true
+    #     timeout: 240000
+    #     validate_certs: false
+    #   register: create_srv_result
+
+    # - name: Add disk to SRV 
+    #   uri:
+    #     url: "https://{{ proxmox_hostname }}/api2/json/nodes/{{ proxmox_node }}/qemu/300/config"
+    #     method: POST
+    #     headers:
+    #       Authorization: "PVEAPIToken={{ proxmox_api_token_id }}={{ proxmox_api_token_key }}"
+    #     body_format: form-urlencoded
+    #     body:
+    #       virtio1: "{{ vm_storage }}:10"
+    #     validate_certs: no
+    #     status_code: 200
+     # when: create_srv_result.changed
+
+    # - name: Create WEB machine
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     name: "WEB"
+    #     clone: "template-core"
+    #     newid: 400
+    #     memory: 4096
+    #     cores: 4
+    #     full: true
+    #     onboot: true
+    #     timeout: 240000
+    #     validate_certs: false
+
+    - name: Create CLIENT machine
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_hostname }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmox_node }}"
+        name: "CLIENT"
+        clone: "template-client"
+        newid: 500
+        memory: 4096
+        cores: 4
+        full: true
+        onboot: true
+        timeout: 240
+        validate_certs: false
+
+    # - name: Create ANSIBLE machine
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     name: "ANSIBLE"
+    #     clone: "template-ANSIBLE"
+    #     newid: 600
+    #     memory: 2048
+    #     cores: 4
+    #     full: true
+    #     onboot: true
+    #     timeout: 240
+    #     validate_certs: false
+
+    # - name: Network adapters - RTR
+    #   uri:
+    #     url: "https://{{ proxmox_hostname }}/api2/json/nodes/{{ proxmox_node }}/qemu/100/config"
+    #     method: POST
+    #     headers:
+    #       Authorization: "PVEAPIToken={{ proxmox_api_token_id }}={{ proxmox_api_token_key }}"
+    #     body_format: form-urlencoded
+    #     body:
+    #       net0: "virtio,bridge=vmbr0"
+    #       net1: "virtio,bridge=vmbr0,tag=100"
+    #     validate_certs: false
+    #   delegate_to: localhost
+
+    # - name: Network adapters - INT machines
+    #   uri:
+    #     url: "https://{{ proxmox_hostname }}/api2/json/nodes/{{ proxmox_node }}/qemu/{{ item }}/config"
+    #     method: POST
+    #     headers:
+    #       Authorization: "PVEAPIToken={{ proxmox_api_token_id }}={{ proxmox_api_token_key }}"
+    #     body_format: form-urlencoded
+    #     body:
+    #       net0: "virtio,bridge=vmbr0,tag=10"
+    #     validate_certs: false
+    #   loop:
+    #     - 200
+    #     - 300
+    #     - 400
+    #     - 500
+    #    # - 600
+    #   delegate_to: localhost
+
+    # - name: Delete templates
+    #   community.general.proxmox_kvm:
+    #     api_host: "{{ proxmox_hostname }}"
+    #     api_user: "{{ proxmox_user }}"
+    #     api_password: "{{ proxmox_password }}"
+    #     node: "{{ proxmox_node }}"
+    #     vmid: "{{ item }}"
+    #     state: absent
+    #     validate_certs: false
+    #   loop:
+    #     - 901
+    #     - 902
+    #     - 903
+    #     - 904
