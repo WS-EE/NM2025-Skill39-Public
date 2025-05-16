@@ -1,0 +1,28 @@
+# General variables
+score_module_a_competition_id: 2
+
+score_module_a_competitors:
+  - name: Chris-Robin Soon
+    id: 7
+    proxy_host: 172.25.1.101
+  - name: Kristjan Kangur
+    id: 5
+    proxy_host: 172.25.2.101
+  - name: Eero Peetso
+    id: 10
+    proxy_host: 172.25.3.101
+  - name: Tarvi Tasane
+    id: 4
+    proxy_host: 172.25.4.101
+  - name: Priit Pajumäe
+    id: 11
+    proxy_host: 172.25.5.101
+  - name: Kaspar Plaas
+    id: 9
+    proxy_host: 172.25.6.101
+  - name: Erik-Johannes Murdvee
+    id: 8
+    proxy_host: 172.25.7.101
+  - name: Allan Veide
+    id: 6
+    proxy_host: 172.25.8.101

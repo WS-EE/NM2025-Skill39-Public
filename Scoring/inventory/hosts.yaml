@@ -1,0 +1,30 @@
+all:
+  children:
+    linux:
+      hosts:
+        a_fw:
+          ansible_host: 192.168.10.1
+        a_proxy:
+          ansible_host: 192.168.20.10
+        a_ns:
+          ansible_host: 192.168.10.11
+        a_web:
+          ansible_host: 192.168.10.15
+        a_srv:
+          ansible_host: 192.168.10.20
+        a_admin:
+          ansible_host: 192.168.10.100
+        b_ansible:
+          ansible_host: 192.168.100.100
+    windows:
+      hosts:
+        b_rtr:
+          ansible_host: 192.168.100.1
+        b_dc:
+          ansible_host: 192.168.100.5
+        b_srv:
+          ansible_host: 192.168.100.6
+        b_web:
+          ansible_host: 192.168.100.10
+        b_client:
+          ansible_host: 192.168.100.20

@@ -1,0 +1,81 @@
+score_module_b_test_stage_8:
+  # DC: A - Toitekasutuse raport eksisteerib
+  - name: Toitekasutuse raport eksisteerib
+    id: 77
+    points: 0.5
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\EnergyReports) {
+          Get-ChildItem -Path "C:\EnergyReports" -Recurse -Force -File -Filter "*.html" -ErrorAction SilentlyContinue | select -last 5
+        }
+    assert:
+      - result1.stdout != ""
+  # DC: A - Toitekasutuse raport on loodud iga 10 minuti tagant
+  - name: Toitekasutuse raport on loodud iga 10 minuti tagant
+    id: 78
+    points: 1
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\EnergyReports) {
+          $latestFiles = Get-ChildItem -Path "C:\EnergyReports" -Recurse -Force -File -Filter "*.html" -ErrorAction SilentlyContinue `
+            | sort LastWriteTime | select -last 2
+        }
+        write-host ($latestFiles | select -index 0).LastWriteTime
+        write-host ($latestFiles | select -index 1).LastWriteTime
+        New-Timespan -Start ($latestFiles | select -index 0).LastWriteTime -End ($latestFiles | select -index 1).LastWriteTime
+    assert:
+      - "result1.stdout is search('Minutes +: 9') or result1.stdout is search('Minutes +: 10') "
+  # DC: A -  Toitekasutuse raporti nimeformaat on korrektne
+  - name: Toitekasutuse raporti nimeformaat on korrektne
+    id: 79
+    points: 0.45
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\EnergyReports) {
+          Get-ChildItem -Path "C:\EnergyReports" -Recurse -Force -File -Filter "*.html" -ErrorAction SilentlyContinue | select -last 5
+        }
+    assert:
+      - result1.stdout is search("EnergyReport-[0-9]{8}-[0-9]{4}.html")
+  # SRV: A - Võrguketaste raport eksisteerib
+  - name: Võrguketaste raport eksisteerib
+    id: 80
+    points: 1
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\ShareReports ) {
+          Get-ChildItem -Path "C:\ShareReports" -Recurse -Force -File -Filter "*.txt" -ErrorAction SilentlyContinue | select -last 5
+        }
+    assert:
+      - result1.stdout != ""
+  # SRV: A - Võrguketaste raport on loodud iga 5 minuti tagant
+  - name: Võrguketaste raport on loodud iga 5 minuti tagant
+    id: 81
+    points: 0.7
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\ShareReports ) {
+          $latestFiles = Get-ChildItem -Path "C:\ShareReports" -Recurse -Force -File -Filter "*.txt" -ErrorAction SilentlyContinue `
+            | sort LastWriteTime | select -last 2
+        }
+        write-host ($latestFiles | select -index 0).LastWriteTime
+        write-host ($latestFiles | select -index 1).LastWriteTime
+        New-Timespan -Start ($latestFiles | select -index 0).LastWriteTime -End ($latestFiles | select -index 1).LastWriteTime
+    assert:
+      - "result1.stdout is search('Minutes +: 4') or result1.stdout is search('Minutes +: 5') "
+  # SRV: A - Võrguketaste raporti nimeformaat on korrektne
+  - name: Võrguketaste raporti nimeformaat on korrektne
+    id: 82
+    points: 0.5
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        if (Test-Path -Path C:\ShareReports ) {
+          Get-ChildItem -Path "C:\ShareReports" -Recurse -Force -File -Filter "*.txt" -ErrorAction SilentlyContinue | select -last 5
+        }
+    assert:
+      - result1.stdout is search("ShareReport-[0-9]{8}-[0-9]{4}.txt")

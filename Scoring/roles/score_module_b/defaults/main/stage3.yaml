@@ -1,0 +1,94 @@
+score_module_b_test_stage_3:
+  # SRV: A - Server töötab domeenikontrollerina
+  - name: Server töötab domeenikontrollerina
+    id: 58
+    points: 0.5
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-ADDomainController -Identity SRV
+    assert:
+      - result1.rc == 0
+  # SRV: A - IM roll on liigutatud serverile
+  - name: IM roll on liigutatud serverile
+    id: 59
+    points: 0.7
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-ADDomainController -Identity SRV | select -Property OperationMasterRoles
+    assert:
+      - "'{InfrastructureMaster}' in result1.stdout"
+  # DC: A - Forwarderitena kasutusel Cloudflare nimeserverid
+  - name: Forwarderitena kasutusel Cloudflare nimeserverid
+    id: 60
+    points: 0.5
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-DnsServerForwarder | Select -Property IPAddress
+    assert:
+      - "'1.1.1.1' in result1.stdout"
+      - "'1.0.0.1' in result1.stdout"
+      - result1.rc == 0
+  # DC: A - IPv4 DNS kirjed eksisteerivad
+  - name: IPv4 DNS kirjed eksisteerivad
+    id: 61
+    points: 0.7
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-DnsServerResourceRecord -ZoneName est.skills -RRType A | select -Property HostName
+      cmd2: |
+        Get-DnsServerResourceRecord -ZoneName est.skills -RRType CNAME | select -Property HostName
+    assert:
+      - "'dc' in result1.stdout | lower"
+      - "'rtr' in result1.stdout | lower"
+      - "'srv' in result1.stdout | lower"
+      - "'web' in result1.stdout | lower"
+      - "'client' in result1.stdout | lower"
+      - "'ansible' in result1.stdout | lower"
+      - "'intra' in result1.stdout | lower or 'intra' in result2.stdout | lower"
+  # DC: A - IPv4 DNS pöördlahenduse kirjed eksisteerivad
+  - name: IPv4 DNS pöördlahenduse kirjed eksisteerivad
+    id: 62
+    points: 0.6
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-DnsServerResourceRecord -ZoneName 100.168.192.in-addr.arpa -RRType PTR | select -expandproperty RecordData | select -Property PtrDomainName
+    assert:
+      - "'dc' in result1.stdout | lower"
+      - "'rtr' in result1.stdout | lower"
+      - "'srv' in result1.stdout | lower"
+      - "'web' in result1.stdout | lower"
+      - "'client' in result1.stdout | lower"
+      - "'ansible' in result1.stdout | lower"
+  # DC: A - IPv6 DNS kirjed eksisteerivad
+  - name: IPv6 DNS kirjed eksisteerivad
+    id: 63
+    points: 0.7
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-DnsServerResourceRecord -ZoneName est.skills -RRType AAAA | select -Property HostName
+      cmd2: |
+        Get-DnsServerResourceRecord -ZoneName est.skills -RRType CNAME | select -Property HostName
+    assert:
+      - "'dc' in result1.stdout | lower"
+      - "'rtr' in result1.stdout | lower"
+      - "'srv' in result1.stdout | lower"
+      - "'web' in result1.stdout | lower"
+      - "'client' in result1.stdout | lower"
+      - "'ansible' in result1.stdout | lower"
+      - "'intra' in result1.stdout | lower or 'intra' in result2.stdout | lower"
+#  # DC: A - IPv6 DNS pöördlahenduse kirjed eksisteerivad
+#  - name: IPv6 DNS pöördlahenduse kirjed eksisteerivad
+#    id:
+#    points: 0.6
+#    hostname:
+#    get_content:
+#      cmd1: |
+#        write-host hello
+#    assert:
+#      - result1.rc == 0

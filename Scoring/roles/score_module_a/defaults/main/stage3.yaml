@@ -1,0 +1,51 @@
+score_module_a_test_stage_3:
+  # SRV: A - Täiendav kõvaketas on vormindatud õige failisüsteemiga
+  - name: Täiendav kõvaketas on vormindatud õige failisüsteemiga
+    id: 21
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        lsblk -f
+    assert:
+      - "'vfat' in result1.stdout"
+  # SRV: A - Ketas on mountitud serveris õigesse asukohta
+  - name: Ketas on mountitud serveris õigesse asukohta
+    id: 22
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+         df -T
+    assert:
+      - "'/opt/tobias' in result1.stdout"
+  # SRV: A - NFS teenus on paigaldatud
+  - name: NFS teenus on paigaldatud
+    id: 23
+    points: 0.5
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        apt list --installed
+    assert:
+      - "'nfs-kernel-server' in result1.stdout"
+  # SRV: A - NFS teenusega jagatakse /opt/web kaust välja
+  - name: NFS teenusega jagatakse opt web kaust välja
+    id: 24
+    points: 0.5
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        cat /etc/exports
+    assert:
+      - "'/opt/web' in result1.stdout"
+  # WEB: A - NFS ketas on mountitud /mnt/web kausta
+  - name: NFS ketas on mountitud mnt web kausta
+    id: 25
+    points: 1
+    hostname: a_web
+    get_content:
+      cmd1: |
+        df /mnt/web/
+    assert:
+      - "'/opt/web' in result1.stdout"

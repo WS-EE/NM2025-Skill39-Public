@@ -1,0 +1,129 @@
+---
+
+- name: Build combined competitor-stage list for Stage 1
+  tags: stage1
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_1: "{{ combined_competitor_stage_list_1 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_1 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 1
+  tags: stage1
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_1 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 2
+  tags: stage2
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_2: "{{ combined_competitor_stage_list_2 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_2 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 2
+  tags: stage2
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_2 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 3
+  tags: stage3
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_3: "{{ combined_competitor_stage_list_3 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_3 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 3
+  tags: stage3
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_3 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 4
+  tags: stage4
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_4: "{{ combined_competitor_stage_list_4 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_4 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 4
+  tags: stage4
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_4 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 5
+  tags: stage5
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_5: "{{ combined_competitor_stage_list_5 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_5 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 5
+  tags: stage5
+  ansible.builtin.include_tasks:
+    stage_run_linux.yaml
+  loop: "{{ combined_competitor_stage_list_5 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 6
+  tags: stage6
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_6: "{{ combined_competitor_stage_list_6 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_6 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 6
+  tags: stage6
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_6 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 7
+  tags: stage7
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_7: "{{ combined_competitor_stage_list_7 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_7 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 7
+  tags: stage7
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_7 }}"
+  loop_control:
+    loop_var: current_stage
+
+- name: Build combined competitor-stage list for Stage 8
+  tags: stage8
+  ansible.builtin.set_fact:
+    combined_competitor_stage_list_8: "{{ combined_competitor_stage_list_8 | default([]) + [{'competitor': item.1, 'score_tests': item.0}] }}"
+  loop: "{{ score_module_b_test_stage_8 | product(score_module_b_competitors) | list }}"
+  vars:
+    combined: []
+
+- name: Stage 8
+  tags: stage8
+  ansible.builtin.include_tasks:
+    stage_run.yaml
+  loop: "{{ combined_competitor_stage_list_8 }}"
+  loop_control:
+    loop_var: current_stage

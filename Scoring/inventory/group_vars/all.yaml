@@ -1,0 +1,17 @@
+# Proxy jump
+ansible_ssh_common_args: '
+  -o StrictHostKeyChecking=no
+  -o UserKnownHostsFile=/dev/null
+  -o ProxyCommand="ssh
+  -o StrictHostKeyChecking=no
+  -o UserKnownHostsFile=/dev/null
+  -W %h:%p -q root@{{ competitor_jumphost }} -i secrets/id_ed25519"'
+
+# Arbitaja API key
+set_score_arbitaja_api_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31386630396163653762613931393937653862646334323131633736656261623039376332616662
+          3438396166356363323963346462316134636136373235630a626364333338613930316339623330
+          62303564306639306634393563353661316137396666323735373434653135623862303134633934
+          6263393863336337310a303866333466343339626163303932303038356639656134323065303464
+          6266

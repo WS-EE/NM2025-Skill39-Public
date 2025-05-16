@@ -1,0 +1,106 @@
+score_module_a_test_stage_1:
+  # ADMIN: A - ADMIN tööjaamas SSH võtmete põhine ligipääs
+  - name: ADMIN tööjaamas SSH võtmete põhine ligipääs
+    id: 5
+    points: 1
+    hostname: a_admin
+    get_content:
+      cmd1: |
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 \
+        -o PreferredAuthentications=publickey -i /home/meister/.ssh/modulea meister@192.168.20.10 exit 0
+    assert:
+      - result1.rc == 0
+  # ADMIN: A - Turvauuenduste infokiri eksisteerib
+  - name: Turvauuenduste infokiri eksisteerib
+    id: 6
+    points: 0.2
+    hostname: a_admin
+    get_content:
+      cmd1: cat /home/meister/infokiri.txt
+    assert:
+      - result1.rc == 0
+  # ADMIN: A - Turvauuenduste infokiri sisu on korrektne
+  - name: Turvauuenduste infokiri sisu on korrektne
+    id: 7
+    points: 0.3
+    hostname: a_admin
+    get_content:
+      cmd1: |
+        cat /home/meister/infokiri.txt | tr "\n" "," | grep -iE \
+        "([0-9]{4}-[0-9]{2}-[0-9]{2}: DSA-[0-9]{4}-[0-9] \w+ - .+,){2,},?Infokirja viimane uuendus toimus [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2},$"
+    assert:
+      - result1.rc == 0
+  # ADMIN: A - Turvauuenduste infokirja uuendamise teenus töötab
+#   - name: Turvauuenduste infokirja uuendamise teenus töötab
+#     id: 8
+#     points: 1
+#     hostname: a_admin
+#     get_content:
+#       cmd1: |
+#         OLD_TIME=$(date -r /home/meister/infokiri.txt)
+#         systemctl start infokiri.service
+#         sleep 1
+#         NEW_TIME=$(date -r /home/meister/infokiri.txt)
+#         if [[ $OLD_TIME == $NEW_TIME ]]; then
+#           echo $OLD_TIME
+#           echo $NEW_TIME
+#           exit 1
+#         else
+#           exit 0
+#         fi
+#     assert:
+#       - result1.rc == 0
+  # WEB: A - Turvauuenduste infokiri on veebiserveris
+  - name: Turvauuenduste infokiri on veebiserveris
+    id: 9
+    points: 0.2
+    hostname: a_web
+    get_content:
+      cmd1: |
+        cat /var/www/security/infokiri.txt
+    assert:
+      - result1.rc == 0
+#   # WEB: A - Turvauuenduste infokiri uueneb automaatselt veebiserveris
+#   - name: Turvauuenduste infokiri uueneb automaatselt veebiserveris
+#     id: 10
+#     points: 0.2
+#     hostname: a_admin
+#     cmd2_hostname: a_web
+#     get_content:
+#       cmd1: |
+#         OLD_TIME=$(date -r /home/meister/infokiri.txt)
+#         cd /home/meister
+#         bash infokiri.sh
+#         sleep 2
+#         systemctl start infokiri.service
+#         sleep 1
+#         NEW_TIME=$(date -r /home/meister/infokiri.txt)
+#         if [[ $OLD_TIME == $NEW_TIME ]]; then echo $OLD_TIME; echo $NEW_TIME; exit 1
+#         else
+#           cat /home/meister/infokiri.txt
+#         fi
+#       cmd2: |
+#         cat /var/www/security/infokiri.txt
+#     assert:
+#       - result1.rc == 0
+#       - result2.rc == 0
+#       - result1.stdout == result2.stdout
+  # WEB: A - Veebiserver töötab
+  - name: Veebiserver töötab
+    id: 11
+    points: 0.2
+    hostname: a_web
+    get_content:
+      cmd1: curl -sS 192.168.10.15
+    assert:
+      - result1.rc == 0
+  # WEB: A - Veebiserver serveerib turvauuenduste infokirja
+  - name: Veebiserver serveerib turvauuenduste infokirja
+    id: 12
+    points: 0.4
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS security.eesti.asi/infokiri.txt --resolve security.eesti.asi:80:192.168.10.15
+    assert:
+      - result1.rc == 0

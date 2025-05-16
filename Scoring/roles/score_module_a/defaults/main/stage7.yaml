@@ -1,0 +1,51 @@
+score_module_a_test_stage_7:
+  # WEB: A - Sertifikaat lisatud www.eesti.asi lehele
+  - name: Sertifikaat lisatud www.eesti.asi lehele
+    id: 35
+    points: 0.5
+    hostname: a_web
+    get_content:
+      cmd1: |
+        echo | openssl s_client -showcerts -servername www.eesti.asi -connect 192.168.10.15:443 -nameopt lname,sep_multiline,utf8
+    assert:
+      - "'commonName=www.eesti.asi' in result1.stdout"
+  # WEB: A - Sertifikaat lisatud security.eesti.asi lehele
+  - name: Sertifikaat lisatud security.eesti.asi lehele
+    id: 36
+    points: 0.5
+    hostname: a_web
+    get_content:
+      cmd1: |
+        echo | openssl s_client -showcerts -servername security.eesti.asi -connect 192.168.10.15:443 -nameopt lname,sep_multiline,utf8
+    assert:
+      - "'commonName=security.eesti.asi' in result1.stdout"
+  # WEB: A - Sertifikaat lisatud hää.eesti.asi lehele
+  - name: Sertifikaat lisatud hää.eesti.asi lehele
+    id: 37
+    points: 0.5
+    hostname: a_web
+    get_content:
+      cmd1: |
+        echo | openssl s_client -showcerts -servername hää.eesti.asi -connect 192.168.10.15:443 -nameopt lname,sep_multiline,utf8
+    assert:
+      - "'commonName=hää.eesti.asi' in result1.stdout"
+  # WEB: A - hää.eesti.asi leht avaneb
+  - name: hää.eesti.asi leht avaneb
+    id: 38
+    points: 1
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS hää.eesti.asi -v
+    assert:
+      - "'200 OK' in result1.stderr"
+  # WEB: A - hää.eesti.asi sisaldab teksti "Täpitähed on vahvad!"
+  - name: hää.eesti.asi sisaldab teksti Täpitähed on vahvad
+    id: 39
+    points: 1
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS hää.eesti.asi
+    assert:
+      - "'Täpitähed on vahvad!' in result1.stdout"

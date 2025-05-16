@@ -1,0 +1,148 @@
+score_module_a_test_stage_2:
+  # NS: A - Serveril töötab nimeserveri teenus
+  - name: Serveril töötab nimeserveri teenus
+    id: 13
+    points: 0.2
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        netstat -ulp
+    assert:
+      - "'domain' in result1.stdout"
+  # NS: A - Autoratiivne nimeserver tsoonile eesti.asi
+  - name: Autoratiivne nimeserver tsoonile eesti.asi
+    id: 14
+    points: 0.4
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        dig eesti.asi NS +noall +answer
+    assert:
+      - "'eesti.asi' in result1.stdout"
+      - "'communications error' not in result1.stdout"
+  # NS: A - Forwarderitena kasutusel EENet nimeserverid
+  - name: Forwarderitena kasutusel EENet nimeserverid
+    id: 15
+    points: 0.4
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        named-checkconf -p
+    assert:
+      - result1.rc == 0
+      - "'193.40.0.12' in result1.stdout"
+      - "'193.40.56.245' in result1.stdout"
+  # NS: A - IPv4 DNS kirjed eksisteerivad
+  - name: IPv4 DNS kirjed eksisteerivad
+    id: 16
+    points: 0.8
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        ARecords=(fw proxy ns srv web admin security www)
+        CNAMERecords=(security www)
+        for ARecord in "${ARecords[@]}"; do
+            dig +noall +answer $ARecord.eesti.asi A
+        done
+        for CNAMERecord in "${CNAMERecords[@]}"; do
+            dig +noall +answer $CNAMERecord.eesti.asi CNAME
+        done
+    assert:
+      - "'fw' in result1.stdout"
+      - "'proxy' in result1.stdout"
+      - "'ns' in result1.stdout"
+      - "'srv' in result1.stdout"
+      - "'web' in result1.stdout"
+      - "'admin' in result1.stdout"
+      - "'security' in result1.stdout"
+      - "'www' in result1.stdout"
+  # NS: A - IPv4 DNS pöördlahenduse kirjed eksisteerivad
+  - name: IPv4 DNS pöördlahenduse kirjed eksisteerivad
+    id: 17
+    points: 0.6
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        PTRRecords=(20.10 20.1 10.1 10.11 10.15 10.20 10.100)
+        for PTRRecord in "${PTRRecords[@]}"; do
+            dig +noall +answer -x "192.168.$PTRRecord"
+        done
+    assert:
+      - "'fw' in result1.stdout"
+      - "'proxy' in result1.stdout"
+      - "'ns' in result1.stdout"
+      - "'srv' in result1.stdout"
+      - "'web' in result1.stdout"
+      - "'admin' in result1.stdout"
+  # NS: A - IPv6 DNS kirjed eksisteerivad
+  - name: IPv6 DNS kirjed eksisteerivad
+    id: 18
+    points: 0.8
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        AAAARecords=(fw proxy ns srv web admin security www)
+        CNAMERecords=(security www)
+        for AAAARecord in "${AAAARecords[@]}"; do
+            dig +noall +answer $AAAARecord.eesti.asi AAAA
+        done
+        for CNAMERecord in "${CNAMERecords[@]}"; do
+            dig +noall +answer $CNAMERecord.eesti.asi CNAME
+        done
+    assert:
+      - "'fw' in result1.stdout"
+      - "'proxy' in result1.stdout"
+      - "'ns' in result1.stdout"
+      - "'srv' in result1.stdout"
+      - "'web' in result1.stdout"
+      - "'admin' in result1.stdout"
+      - "'security' in result1.stdout"
+      - "'www' in result1.stdout"
+  # NS: A - IPv6 DNS pöördlahenduse kirjed eksisteerivad
+  - name: IPv6 DNS pöördlahenduse kirjed eksisteerivad
+    id: 19
+    points: 0.6
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        PTRRecords=(20::10 20::1 10::1 10::11 10::15 10::20 10::100)
+        for PTRRecord in "${PTRRecords[@]}"; do
+            dig +noall +answer -x "2001:db8:192:168:$PTRRecord"
+        done
+    assert:
+      - "'fw' in result1.stdout"
+      - "'proxy' in result1.stdout"
+      - "'ns' in result1.stdout"
+      - "'srv' in result1.stdout"
+      - "'web' in result1.stdout"
+      - "'admin' in result1.stdout"
+  # NS: A - Kliendid kasutavad kohaliku nimeserverit kirjete lahendamiseks IPv4
+  - name: Kliendid kasutavad nimeserverit kirjete lahendamiseks IPv4
+    id: 20
+    points: 0.1
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        cat /etc/resolv.conf
+    assert:
+      - "'nameserver 192.168.10.11' in result1.stdout"
+  # NS: A - Kliendid kasutavad kohaliku nimeserverit kirjete lahendamiseks IPv6
+  - name: Kliendid kasutavad nimeserverit kirjete lahendamiseks IPv6
+    id: 83
+    points: 0.1
+    hostname: a_ns
+    get_content:
+      cmd1: |
+        cat /etc/resolv.conf
+    assert:
+      - "'nameserver 2001:db8:192:168:10::11' in result1.stdout"
+  # ADMIN: M - Ansible playbook konfigureerib serverites kasutatavad nimeserverid
+  # - name:
+  #   id:
+  #   points:
+  #   hostname: a_ns
+  #   get_content:
+  #     cmd1: |
+  #       echo 1
+  #   assert:
+  #     - result1.rc == 0

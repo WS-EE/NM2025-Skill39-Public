@@ -1,0 +1,34 @@
+score_module_b_test_stage_6:
+  # RTR: A - Server ei ole lisatud domeeni
+  - name: Server ei ole lisatud domeeni
+    id: 69
+    points: 0.5
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADComputer RTR
+    assert:
+      - result1.rc == 1
+  # RTR: A - Marsruuteri teenused on paigaldatud
+  - name: Marsruuteri teenused on paigaldatud
+    id: 70
+    points: 0.4
+    hostname: b_rtr
+    get_content:
+      cmd1: |
+        Get-WindowsFeature -Name Routing
+    assert:
+      - "'[X]' in result1.stdout"
+  # CLIENT: A - www.worldskillsetonia.ee avaneb
+  - name: www.worldskillsetonia.ee avaneb
+    id: 71
+    points: 1
+    hostname: b_client
+    get_content:
+      # Bill Microsoft breaks Invoke-WebRequest. It gets stuck if not put into a variable and then printed. Lovely.
+      # A known bug in Powershell
+      cmd1: |
+        $Content = (Invoke-WebRequest -Uri "https://www.worldskillsestonia.ee" -UseBasicParsing )
+        Write-host $Content
+    assert:
+      - "'WP Fastest Cache file' in result1.stdout"

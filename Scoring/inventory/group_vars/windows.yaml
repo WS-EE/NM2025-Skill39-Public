@@ -1,0 +1,5 @@
+# Ansible vars for module b
+ansible_user: "Administrator"
+ansible_ssh_password: "Passw0rd!"
+ansible_connection: ssh
+ansible_shell_type: powershell

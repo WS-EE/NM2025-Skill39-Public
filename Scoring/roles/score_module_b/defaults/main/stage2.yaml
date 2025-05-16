@@ -1,0 +1,48 @@
+score_module_b_test_stage_2:
+  # WEB: A - Masin on lisatud domeeni
+  - name: WEB Masin on lisatud domeeni
+    id: 54
+    points: 0.2
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADComputer -Identity WEB
+    assert:
+      - result1.rc == 0
+  # WEB: A - IIS teenus on paigaldatud
+  - name: IIS teenus on paigaldatud
+    id: 55
+    points: 0.6
+    hostname: b_web
+    get_content:
+      cmd1: |
+        Get-WindowsFeature -Name Web-Server
+    assert:
+      - "'[X]' in result1.stdout"
+  # WEB: A - intra.est.skills aadressilt vastab veebiserver
+  - name: intra.est.skills aadressilt vastab veebiserver
+    id: 56
+    points: 0.8
+    hostname: b_srv # b_web is core so internet explorer web engine is not started
+    get_content:
+      cmd1: |
+        Invoke-WebRequest -Uri intra.est.skills -useDefaultCredentials
+    assert:
+      - "'200' in result1.stdout"
+      - "'OK' in result1.stdout"
+      - result1.rc == 0
+  # WEB: A - Veebileht on kasutatav ainult domeenikasutajatele
+  - name: Veebileht on kasutatav ainult domeenikasutajatele
+    id: 57
+    points: 1.4
+    hostname: b_srv # b_web is core so internet explorer web engine is not started
+    get_content:
+      cmd1: |
+        Invoke-WebRequest -Uri intra.est.skills -useDefaultCredentials
+      cmd2: |
+        Invoke-WebRequest -Uri intra.est.skills
+    assert:
+      - "'200' in result1.stdout"
+      - "'OK' in result1.stdout"
+      - result1.rc == 0
+      - result2.rc != 0

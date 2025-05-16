@@ -1,0 +1,4 @@
+- name: Run scorrer C
+  hosts: localhost
+  roles:
+    - score_module_c

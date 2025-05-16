@@ -1,0 +1,58 @@
+score_module_b_test_stage_4:
+  # DC: A - Defineeritud OU'd eksisteerivad
+  - name: Defineeritud OU'd eksisteerivad
+    id: 64
+    points: 1
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADOrganizationalUnit -Filter 'Name -like "*"' | Format-Table Name -A
+    assert:
+      - "'Servers' in result1.stdout"
+      - "'Workstations' in result1.stdout"
+      - "'Employees' in result1.stdout"
+  # DC: A - Domeenimasinad on liigutatud õigetesse OU'desse
+  - name: Domeenimasinad on liigutatud õigetesse OU'desse
+    id: 65
+    points: 0.5
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADComputer WEB | select -Property DistinguishedName
+      cmd2: |
+        Get-ADComputer CLIENT | select -Property DistinguishedName
+    assert:
+      - "'OU=Servers' in result1.stdout"
+      - "'OU=Workstations' in result2.stdout"
+  # DC: A - John Doe ja Jane Doe kontod on loodud
+  - name: John Doe ja Jane Doe kontod on loodud
+    id: 66
+    points: 0.3
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADUser -Filter 'Name -like "*Doe"' | Format-Table SamAccountName -A
+    assert:
+      - "'jane' in result1.stdout"
+      - "'john' in result1.stdout"
+  # CLIENT: A - Töölaual on otsetee Intrawebi
+  - name: Töölaual on otsetee Intrawebi
+    id: 67
+    points: 0.8
+    hostname: b_client
+    get_content:
+      cmd1: |
+        Get-ChildItem -Path "C:\Users" -Recurse -Force -File -Filter "*.url" -ErrorAction SilentlyContinue | where {$_.Name -ne "Bing.url"}
+    assert:
+      - "'.url' in result1.stdout"
+  # CLIENT: A - Logid on salvestatud C:\Logs kausta
+  - name: Logid on salvestatud C:\Logs kausta
+    id: 68
+    points: 2
+    hostname: b_client
+    get_content:
+      cmd1: |
+        Test-Path -Path C:\Logs\Application.evtx
+    assert:
+      - "'True' in result1.stdout"
+      # REDO THIS TO USE TEST-PATH

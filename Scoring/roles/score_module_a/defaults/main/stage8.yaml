@@ -1,0 +1,41 @@
+score_module_a_test_stage_8:
+  # SRV: A - serverisse on paigaldatud syslog server
+  - name: serverisse on paigaldatud syslog server
+    id: 40
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        apt list --installed
+    assert:
+      - "'rsyslog' in result1.stdout"
+  # SRV: A - kokkukorjatud logid on korrektses formaadis
+  - name: kokkukorjatud logid on korrektses formaadis
+    id: 41
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        rsyslogd -N1 -o /dev/stdout
+    assert:
+      - "'/var/log/%HOSTNAME%/%PROGRAMNAME%.log' in result1.stdout"
+  # SRV: A - edastatakse logisid FW serverist
+  - name: edastatakse logisid FW serverist
+    id: 42
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        cat /var/log/FW/sudo.log | tail -10
+    assert:
+      - "'FW sudo:' in result1.stdout"
+  # SRV: A - edastatakse logisid WEB serverist
+  - name: edastatakse logisid WEB serverist
+    id: 43
+    points: 1
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        cat /var/log/WEB/sudo.log | tail -10
+    assert:
+      - "'WEB sudo:' in result1.stdout"

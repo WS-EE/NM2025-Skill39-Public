@@ -1,0 +1,94 @@
+score_module_b_test_stage_1:
+  # DC: A - Server töötab domeenikontrollerina
+  - name: Server töötab domeenikontrollerina
+    id: 44
+    points: 1
+    hostname: b_dc
+    get_content:
+      cmd1: |
+        Get-ADDomainController -Identity DC
+    assert:
+      - result1.rc == 0
+  # SRV: A - Server on lisatud domeeni
+  - name: SRV Server on lisatud domeeni
+    id: 46
+    points: 0.2
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-ADComputer -Identity SRV
+    assert:
+      - result1.rc == 0
+  # SRV: A - Ketas on mountitud kettale N:
+  - name: Ketas on mountitud kettale N
+    id: 47
+    points: 0.6
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-PSDrive N
+    assert:
+      - result1.rc == 0
+  # SRV: A - Ketta failisüsteem on NTFS
+  - name: Ketta failisüsteem on NTFS
+    id: 48
+    points: 0.6
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-WmiObject -Class Win32_Volume | Where {$_.DriveLetter -ne "C:"} | Where {$_.DriveLetter -Match "^\w"} | Select -Property DriveLetter,FileSystem
+    assert:
+      - "'NTFS' in result1.stdout"
+  # SRV: A - DFS on seadistatud asukohale \\est.skills\DFS\Avalik
+  - name: DFS on seadistatud asukohale est.skills DFS Avalik
+    id: 49
+    points: 0.5
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Test-Path -Path \\est.skills\DFS\Avalik
+    assert:
+      - "'True' in result1.stdout"
+  # SRV: A - DHCP severi teenus on paigaldatud
+  - name: DHCP severi teenus on paigaldatud
+    id: 50
+    points: 0.3
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-WindowsFeature -Name DHCP
+    assert:
+      - "'[X]' in result1.stdout"
+  # SRV: A - DHCP serveri scope on korrektne
+  - name: DHCP serveri scope on korrektne
+    id: 51
+    points: 0.2
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-DhcpServerv4Scope -ScopeId 192.168.100.0
+    assert:
+      - result1.rc == 0
+  # SRV: A - DHCP serveri jagatavad DNS serverid on korrektsed
+  - name: DHCP serveri jagatavad DNS serverid on korrektsed
+    id: 52
+    points: 0.2
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-DhcpServerv4OptionValue -ScopeId 192.168.100.0 | select -Property OptionId,Value
+    assert:
+      - "'192.168.100.6' in result1.stdout"
+      - "'192.168.100.5' in result1.stdout"
+      - "'192.168.100.1' in result1.stdout"
+  # CLIENT: A - Reserveeritud IP aadress on saadud DHCP serverist
+  - name: Reserveeritud IP aadress on saadud DHCP serverist
+    id: 53
+    points: 0.4
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-DhcpServerv4Reservation -ScopeId 192.168.100.0
+    assert:
+      - "'192.168.100.20' in result1.stdout"
+      - "'bc-24-11-2b-07-4f' in result1.stdout"

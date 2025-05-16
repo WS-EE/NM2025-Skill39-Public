@@ -1,0 +1,59 @@
+---
+#######
+# General scoring tasks
+#######
+
+- name: Make sure competitor folder exists
+  ansible.builtin.file:
+    state: directory
+    path: "tests/{{ set_score_competitor_name }}"
+    owner: "{{ set_score_local_user }}"
+    group: "{{ set_score_local_user }}"
+    mode: "0755"
+
+- name: Make sure competitor criteria files exists
+  ansible.builtin.file:
+    state: touch
+    path: "tests/{{ set_score_competitor_name }}/{{ set_score_criteria_id }}-{{ set_score_criteria_name }}.txt"
+    owner: "{{ set_score_local_user }}"
+    group: "{{ set_score_local_user }}"
+    mode: "0755"
+
+- name: Keep local record of test and content
+  ansible.builtin.blockinfile:
+    path: "tests/{{ set_score_competitor_name }}/{{ set_score_criteria_id }}-{{ set_score_criteria_name }}.txt"
+    marker: "@timestamp: {{ now() }}"
+    marker_begin: '\n# BEGIN '
+    marker_end: '# END '
+    content: |
+      Competitor name: {{ set_score_competitor_name }}
+      Criteria name: {{ set_score_criteria_name }}
+      Test statement block:
+      ---
+      {{ set_score_test }}
+      ---
+      Test content:
+      ---
+      {{ set_score_evaluated_content }}
+      ---
+  delegate_to: localhost
+  tags:
+    - local
+
+- name: Set data on arbitaja
+  ansible.builtin.uri:
+    url: "{{ set_score_arbitaja_url }}/api/v1/competition/criteria/history/add"
+    method: POST
+    headers:
+      X-API-KEY: "{{ set_score_arbitaja_api_key }}"
+    body:
+      competition_id: "{{ set_score_competition_id }}"
+      criteria_id: "{{ set_score_criteria_id }}"
+      competitor_id: "{{ set_score_competitor_id }}"
+      points: "{{ set_score_points }}"
+    body_format: form-urlencoded
+    return_content: true
+  delegate_to: localhost
+  when: set_score_want_arbitaja
+  tags:
+    - arbitaja

@@ -1,0 +1,59 @@
+score_module_b_test_stage_7:
+  # ADMIN: A - intra.est.skills lehele on lisatud sertifikaat
+  - name: intra.est.skills lehele on lisatud sertifikaat
+    id: 73
+    points: 1
+    hostname: b_client
+    get_content:
+      cmd1: |
+        add-type @"
+            using System.Net;
+            using System.Security.Cryptography.X509Certificates;
+            public class TrustAllCertsPolicy : ICertificatePolicy {
+                public bool CheckValidationResult(
+                    ServicePoint srvPoint, X509Certificate certificate,
+                    WebRequest request, int certificateProblem) {
+                    return true;
+                }
+            }
+        "@
+        [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+        Invoke-WebRequest -Uri "https://intra.est.skills" -useDefaultCredentials -timeout 5
+    assert:
+      - "'200' in result1.stdout"
+      - "'OK' in result1.stdout"
+      - result1.rc == 0
+  # ADMIN: A - sertifikaat on usaldatud tööjaamas
+  - name: sertifikaat on usaldatud tööjaamas
+    id: 74
+    points: 1.5
+    hostname: b_client
+    get_content:
+      cmd1: |
+        Invoke-WebRequest -Uri "https://intra.est.skills" -useDefaultCredentials -timeout 5
+    assert:
+      - "'200' in result1.stdout"
+      - "'OK' in result1.stdout"
+      - result1.rc == 0
+  # WEB: A - DFS namespace on seadistatud
+  - name: DFS namespace on seadistatud
+    id: 75
+    points: 1
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-DfsnFolderTarget -Path \\est.skills\DFS\Avalik | select -Property TargetPath
+    assert:
+      - "'web.est.skills' in result1.stdout | lower"
+      - "'srv.est.skills' in result1.stdout | lower"
+  # WEB: A - DFS replikatsioon on seadistatud
+  - name: DFS replikatsioon on seadistatud
+    id: 76
+    points: 1
+    hostname: b_srv
+    get_content:
+      cmd1: |
+        Get-DfsrMembership | select -Property DfsnPath
+    assert:
+      - "'web.est.skills\\\\avalik' in result1.stdout | lower"
+      - "'srv.est.skills\\\\avalik' in result1.stdout | lower"

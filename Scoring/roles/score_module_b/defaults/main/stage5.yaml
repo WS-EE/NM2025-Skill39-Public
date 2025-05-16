@@ -1,0 +1,23 @@
+score_module_b_test_stage_5:
+  # ADMIN: A - Ansible ühendus on korras
+  - name: Ansible ühendus on korras
+    id: 45
+    points: 0.2 # TEMP CHANGE
+    hostname: b_ansible
+    cmd1_become_user: meister
+    get_content:
+      cmd1: |
+        cd ~/ansible
+        ansible -m win_ping srv
+    assert:
+      - result1.rc == 0
+  # CLIENT: A - neti.ee ligipääs on blokeeritud # STAGE 6 TASK BUT NEED LINUX
+  - name: neti.ee ligipääs on blokeeritud
+    id: 72
+    points: 1.5
+    hostname: b_ansible
+    get_content:
+      cmd1: |
+        curl https://neti.ee --resolve neti.ee:443:185.154.221.183 -v
+    assert:
+      - "'HTTP/2 302' not in result1.stderr"

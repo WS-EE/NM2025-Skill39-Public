@@ -1,0 +1,7 @@
+---
+
+# Import the stage importer with defined competitors
+- name: Init stage importer
+  tags: always
+  ansible.builtin.include_tasks:
+    import_stages.yaml

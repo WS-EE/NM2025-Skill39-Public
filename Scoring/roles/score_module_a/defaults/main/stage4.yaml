@@ -1,0 +1,41 @@
+score_module_a_test_stage_4:
+  # WEB: A - WordPress veebileht avaneb www.eesti.asi aadressilt
+  - name: WordPress veebileht avaneb www.eesti.asi aadressilt
+    id: 26
+    points: 1
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS www.eesti.asi/wp-login.php
+    assert:
+      - "'wordpress' in result1.stdout"
+  # WEB: A - WordPress veebileht sisaldab teksti "Eesti Asi"
+  - name: WordPress veebileht sisaldab teksti "Eesti Asi"
+    id: 27
+    points: 0.5
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS www.eesti.asi
+    assert:
+      - "'Eesti Asi!' in result1.stdout"
+  # WEB: A - Turvauuenduste infokiri on saadaval security.eesti.asi aadressilt
+  - name: Turvauuenduste infokiri on saadaval security.eesti.asi aadressilt
+    id: 28
+    points: 1
+    hostname: a_web
+    get_content:
+      cmd1: |
+        curl -sS security.eesti.asi/infokiri.txt --resolve security.eesti.asi:80:192.168.10.15 -v
+    assert:
+      - "'200 OK' in result1.stderr"
+  # SRV: A - Meiliserveri teenus on paigaldatud
+  - name: Meiliserveri teenus on paigaldatud
+    id: 29
+    points: 0.5
+    hostname: a_srv
+    get_content:
+      cmd1: |
+        netstat -tl
+    assert:
+      - "'smtp' in result1.stdout"

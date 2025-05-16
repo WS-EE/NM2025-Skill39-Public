@@ -1,0 +1,22 @@
+# Arbitaja variables
+set_score_arbitaja_url: https://www.arbitaja.ee
+set_score_arbitaja_api_key: arbitaja-api-key
+
+# Scoring info forwarded
+set_score_competition_id: 1
+set_score_criteria_id: 30
+set_score_criteria_name: "Tested criteria name"
+set_score_competitor_id: 47
+set_score_competitor_name: "Tested competitor name"
+set_score_points: 2
+set_score_evaluated_content: |
+  Full criteria evaluated content
+set_score_test: |
+  Test done on the conetent
+
+# Local user for local test tracking
+set_score_local_user: user
+
+# If arbitaja is not set up allow the disabling of score setting to arbitaja by setting this false
+# Default is true
+set_score_want_arbitaja: true

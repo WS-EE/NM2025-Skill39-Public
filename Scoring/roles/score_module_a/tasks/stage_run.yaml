@@ -1,0 +1,71 @@
+---
+
+- name: Get content 1 "{{ current_stage.competitor.name + ' ' + current_stage.score_tests.name }}"
+  ansible.builtin.shell:
+    cmd: |
+      {{ current_stage.score_tests.get_content.cmd1 }}
+  register: result1
+  delegate_to: "{{ current_stage.score_tests.hostname }}"
+  changed_when: false
+  args:
+    executable: /bin/bash
+  failed_when: false
+  ignore_unreachable: true
+  become: true
+  tags: always
+  vars:
+    competitor_jumphost: "{{ current_stage.competitor.proxy_host }}"
+
+- name: Get content 2 "{{ current_stage.competitor.name + ' ' + current_stage.score_tests.name }}"
+  ansible.builtin.shell:
+    cmd: |
+      {{ current_stage.score_tests.get_content.cmd2 }}
+  register: result2
+  delegate_to: "{{ current_stage.score_tests.cmd2_hostname | default(current_stage.score_tests.hostname) }}"
+  changed_when: false
+  ignore_unreachable: true
+  args:
+    executable: /bin/bash
+  failed_when: false
+  when: current_stage.score_tests.get_content.cmd2 is defined
+  become: true
+  tags: always
+  vars:
+    competitor_jumphost: "{{ current_stage.competitor.proxy_host }}"
+
+- name: Evaluate "{{ current_stage.competitor.name + ' ' + current_stage.score_tests.name }}"
+  ansible.builtin.assert:
+    that: "{{ current_stage.score_tests.assert }}"
+  ignore_errors: true
+  tags: always
+  register: evaluated
+
+- name: Assert fail points "{{ current_stage.competitor.name + ' ' + current_stage.score_tests.name }}"
+  when: evaluated.failed
+  tags: always
+  ansible.builtin.set_fact:
+    points_given: "0"
+
+- name: Assert success points "{{ current_stage.competitor.name + ' ' + current_stage.score_tests.name }}"
+  when: not evaluated.failed
+  tags: always
+  ansible.builtin.set_fact:
+    points_given: "{{ current_stage.score_tests.points }}"
+
+- name: Set scores for the test point
+  tags: always
+  ansible.builtin.import_role:
+    name: set_score
+  vars:
+    set_score_competition_id: "{{ score_module_a_competition_id }}"
+    set_score_criteria_id: "{{ current_stage.score_tests.id }}"
+    set_score_criteria_name: "{{ current_stage.score_tests.name }}"
+    set_score_competitor_id: "{{ current_stage.competitor.id }}"
+    set_score_competitor_name: "{{ current_stage.competitor.name }}"
+    set_score_points: "{{ points_given }}"
+    set_score_evaluated_content: |
+      "{{ result1 }}"
+      "{{ result2 | default(emit) }}"
+    set_score_test: |
+      "{{ current_stage.score_tests.assert | to_yaml }}"
+      "{{ evaluated | to_yaml }}"
