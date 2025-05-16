@@ -1,0 +1,275 @@
+---
+- name: GNS3 configuration
+  hosts: all 
+  become: yes
+  vars:
+    ansible_user: gns3
+    ansible_password: "M4ster!"
+    ansible_become_password: "M4ster!"
+    webui_admin_user: "admin"
+    webui_admin_password: "GNS3M4ster!"
+    webui_competitor_user: "meister"
+    webui_competitor_password: "shout-mounting-laxative"
+    local_build_dir: "./containers"
+    remote_build_dir: "/opt/containers"
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  tasks:
+    - name: GNS3 OS - Ensure remote build directory exists
+      ansible.builtin.file:
+        path: "{{ remote_build_dir }}"
+        state: directory
+        mode: '0755'
+      tags: containers
+
+    - name: GNS3 OS - Copy container build files to server
+      ansible.builtin.copy:
+        src: "{{ local_build_dir }}/"
+        dest: "{{ remote_build_dir }}/"
+        mode: 0644
+      register: copy_result
+      tags: containers
+
+    - name: GNS3 OS - Find all Dockerfiles on server
+      ansible.builtin.find:
+        paths: "{{ remote_build_dir }}"
+        recurse: yes
+        patterns: "Dockerfile"
+      register: dockerfiles
+      tags: containers
+
+    - name: GNS3 OS - Build each Docker image
+      ansible.builtin.shell: |
+        docker build -t nm25/{{ item.path | dirname | basename }} {{ item.path | dirname }}
+      loop: "{{ dockerfiles.files }}"
+      args:
+        chdir: "{{ remote_build_dir }}"
+      when:
+        - dockerfiles.files | length > 0
+        - copy_result.changed
+      tags: containers
+
+    - name: GNS3 Web - Authenticate to GNS3 and get access token
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/users/authenticate"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          username: "{{ webui_admin_user }}"
+          password: "{{ webui_admin_password }}"
+        return_content: yes
+      register: login_response
+      tags: containers, users, cisco, templates
+
+    - name: GNS3 Web - Set GNS3 access token
+      ansible.builtin.set_fact:
+        gns3_token: "{{ login_response.json.access_token }}"
+      tags: containers, users, cisco, templates
+
+    - name: GNS3 Web - Get list of GNS3 users
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/users"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        return_content: yes
+      register: users_list
+      tags: users
+
+    - name: GNS3 Web - Create new GNS3 competitor user
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/users"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        body_format: json
+        body:
+          username: "{{ webui_competitor_user }}"
+          password: "{{ webui_competitor_password }}"
+          is_admin: true
+        status_code: 201
+      when: >
+          users_list.json | selectattr('username', 'equalto', webui_competitor_user) | list | length == 0
+      tags: users
+
+    - name: GNS3 Web - Force password update for competitor user
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/users/{{ users_list.json | selectattr('username', 'equalto', webui_competitor_user) | map(attribute='user_id') | first }}"
+        method: PUT
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        body_format: json
+        body:
+          password: "{{ webui_competitor_password }}"
+        status_code: 200
+      when: users_list.json | selectattr('username', 'equalto', webui_competitor_user) | map(attribute='user_id') | first is defined
+      tags: users
+
+    - name: GNS3 Web - Get list of GNS3 users
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/users"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        return_content: yes
+      register: users_list
+      tags: users
+
+    - name: GNS3 Web - Get list of GNS3 roles
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/roles"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        return_content: yes
+      register: roles_list
+      tags: users
+
+    - name: GNS3 Web - Find competitor user id
+      ansible.builtin.set_fact:
+        competitor_id: "{{ users_list.json | selectattr('username', 'equalto', webui_competitor_user) | map(attribute='user_id') | first }}"
+      tags: users
+
+    - name: GNS3 Web - Find Administrator role id
+      ansible.builtin.set_fact:
+        admin_role_id: "{{ roles_list.json | selectattr('name', 'equalto', 'Administrator') | map(attribute='role_id') | first }}"
+      tags: users
+
+    - name: GNS3 Web - Create ACL entry for competitor
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/access/acl"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        body_format: json
+        body:
+          ace_type: "user"
+          path: "/"
+          propagate: true
+          allowed: true
+          user_id: "{{ competitor_id }}"
+          group_id: null
+          role_id: "{{ admin_role_id }}"
+        status_code: 201
+      tags: users
+
+    - name: GNS3 Web - Get list of GNS3 templates
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/templates"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        return_content: yes
+      register: templates_list
+      tags: containers, cisco, templates
+
+    - name: GNS3 Web - Create Docker templates if missing
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/templates"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        body_format: json
+        body: "{{ item }}"
+        status_code: 201
+      loop:
+        - name: phase1-client
+          template_type: docker
+          image: nm25/phase1-client
+          adapters: 1
+          console_type: telnet
+          symbol: ":/symbols/affinity/circle/red/laptop.svg"
+          node_type: docker
+          compute_id: local
+        - name: phase1-srv
+          template_type: docker
+          image: nm25/phase1-srv
+          adapters: 1
+          console_type: telnet
+          symbol: ":/symbols/affinity/circle/red/server.svg"
+          node_type: docker
+          compute_id: local
+        - name: phase2-client
+          template_type: docker
+          image: nm25/phase2-client
+          adapters: 1
+          console_type: telnet
+          symbol: ":/symbols/affinity/circle/red/laptop.svg"
+          node_type: docker
+          compute_id: local
+        - name: phase2-srv
+          template_type: docker
+          image: nm25/phase2-srv
+          adapters: 1
+          console_type: telnet
+          symbol: ":/symbols/affinity/circle/red/server.svg"
+          node_type: docker
+          compute_id: local
+      when: >
+          templates_list.json | selectattr('name', 'equalto', item.name) | list | length == 0
+      tags: containers, templates
+
+    - name: GNS3 OS - Upload IOU images
+      ansible.builtin.copy:
+        src: "./iou_images/"
+        dest: "/opt/gns3/images/IOU/"
+        owner: "gns3"
+        group: "gns3"
+        mode: '0744'
+      register: iou_upload
+      tags: cisco
+
+    - name: GNS3 OS - Reboot machine
+      ansible.builtin.reboot:
+      when: iou_upload.changed
+
+    - name: GNS3 Web - Wait for Web Service
+      ansible.builtin.pause:
+        minutes: 1
+      when: iou_upload.changed
+
+    - name: GNS3 Web - Create IOU templates if missing
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/v3/templates"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ gns3_token }}"
+        body_format: json
+        body: "{{ item }}"
+        status_code: 201
+      loop:
+        - name: IOL XE L2
+          template_type: iou
+          node_type: iou
+          iou_image: "iol-xe-l2-17-15-01.iol"
+          path: "iol-xe-l2-17-15-01.iol"
+          ram: 256
+          nvram: 512
+          compute_id: local
+          symbol: ":/symbols/affinity/square/blue/switch_multilayer.svg"
+          ethernet_adapters: 8
+
+        - name: IOL XE L3
+          template_type: iou
+          node_type: iou
+          iou_image: "iol-xe-l3-17-15-01.iol"
+          path: "iol-xe-l3-17-15-01.iol"
+          ram: 512
+          nvram: 512
+          compute_id: local
+          symbol: ":/symbols/affinity/circle/gray/router2.svg"
+          ethernet_adapters: 4
+      when: >
+          templates_list.json | selectattr('name', 'equalto', item.name) | list | length == 0
+      tags: cisco, templates

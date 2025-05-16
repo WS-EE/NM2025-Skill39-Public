@@ -1,0 +1,4 @@
+zone "skill39.net" {
+        type master;
+        file "/etc/bind/zones/db.skill39.net";
+};

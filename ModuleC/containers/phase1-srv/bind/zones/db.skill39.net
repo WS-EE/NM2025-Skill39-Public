@@ -1,0 +1,12 @@
+$TTL 1h
+@      IN  SOA ns1.skill39.net. admin.skill39.net. (
+            2025042601 ; serial
+            1h         ; refresh
+            15m        ; retry
+            1w         ; expire
+            1h )       ; minimum TTL
+       IN  NS  ns1.skill39.net.
+
+; ─── A records ───────────────────────────────────────────────
+@      IN  A   192.168.10.5
+ns1    IN  A   192.168.10.5
