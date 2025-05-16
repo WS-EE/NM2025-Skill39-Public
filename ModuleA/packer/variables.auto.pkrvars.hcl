@@ -1,0 +1,15 @@
+proxmox_hostname = "172.25.1.101:8006"
+#proxmox_hostname = "172.25.2.101:8006"
+proxmox_api_token_id = "root@pam!packer"
+#proxmox_api_token_secret = "c715ba25-2cdb-42f1-9183-1c919fcf3cc4"
+proxmox_api_token_secret = "55c843b0-863b-4802-9d2b-b25ad12f2116"
+proxmox_node = "modulea"
+
+vm_storage = "local-lvm"
+iso_storage = "local"
+iso_path = "iso/debian-12.9.0-amd64-netinst.iso"
+
+root_password = "M4ster!"
+meister_password = "Passw0rd!"
+kohtunik_password = "M4ster!"
+scorer_password = "Arbit4ja!"

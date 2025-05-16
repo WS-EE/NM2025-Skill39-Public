@@ -1,0 +1,22 @@
+source /etc/network/interfaces.d/*
+
+auto lo
+iface lo inet loopback
+
+auto ens18
+iface ens18 inet dhcp
+iface ens18 inet6 dhcp
+
+auto ens19
+iface ens19 inet static
+    address 192.168.10.1/24
+
+iface ens19 inet6 static
+    address 2001:db8:192:168:10::1/80
+
+auto ens20
+iface ens20 inet static
+    address 192.168.20.1/24
+
+iface ens20 inet6 static
+    address 2001:db8:192:168:20::1/80

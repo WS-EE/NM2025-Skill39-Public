@@ -1,0 +1,19 @@
+all:
+  hosts:
+    fw:
+      ansible_host: "192.168.10.1"
+    proxy:
+      ansible_host: "192.168.20.10"
+    ns:
+      ansible_host: "192.168.10.11"
+    web:
+      ansible_host: "192.168.10.15"
+    srv:
+      ansible_host: "192.168.10.20"
+    admin:
+      ansible_host: "192.168.10.100"
+  vars:
+    ansible_user: "meister"
+    ansible_connection: ssh
+    ansible_ssh_pass: "Passw0rd!"
+    ansible_become_pass: "Passw0rd!"
